@@ -1,0 +1,136 @@
+# Ball and region set, moved by moveball.
+:alias bx v0
+:alias by v1
+:alias dx v2
+:alias dy v3
+:alias top v4
+:alias left v5
+:alias right v6
+:alias bottom v7
+
+
+:macro m bn {
+  i := bn
+	load v7
+	moveball
+	i := bn
+	save v7
+}
+
+
+: main
+i := b1
+init
+i := b2
+init
+i := b3
+init
+i := b4
+init
+
+
+loop
+	v5 := delay
+	
+	if v5 == 0 begin
+		m b1
+		m b2
+		m b3
+		m b4
+		v5 := 1
+		delay := v5
+	end
+	
+again
+
+
+: init
+	load v7
+	i := dot
+	sprite bx by 1
+;
+
+# WHY IS IT SO HARD TO BOUNCE A BALL
+: moveball
+  i := dot
+	va := bx
+	vb := by
+	vc := 0x80
+	ve := 0x7f
+	# Handle x movement
+	
+	vd := dx
+	vd &= vc
+	if vd == 0 begin
+		# GOING RIGHT
+		bx += dx
+		bx -= right
+		if vf == 1 begin
+			bx := right
+			dx ^= vc
+		else
+			bx += right
+		end
+	else
+		# GOING LEFT
+		vd := dx
+		vd &= ve
+		bx -= vd
+		if vf == 0 begin
+			bx := 0
+			dx ^= vc
+		end
+	end
+	
+	### NOW FOR Y
+	vd := dy
+	vd &= vc
+	if vd == 0 begin
+		# GOING DOWN
+		by += dy
+		by -= bottom
+		if vf == 1 begin
+			by := bottom
+			dy ^= vc
+		else
+			by += bottom
+		end
+	else
+		# GOING UP
+		vd := dy
+		vd &= ve
+		by -= vd
+		if vf == 0 begin
+			by := 0
+			dy ^= vc
+		end
+	end
+
+  sprite va vb 1
+	sprite bx by 1
+;
+
+: dot
+0x80
+
+# X Y DX DY T L R B
+# DX/DY use MSB to indicate left or right
+# 1 == left
+: b1
+32 10 0x81 3 0 0 63 31
+: b2
+13 27 2 0x83 0 0 63 31
+: b3
+0 0 1 2 0 0 63 31
+: b4
+45 20 0x81 0x82 0 0 63 31
+: b5
+0 0 0 0 0 0 63 31
+: b6
+0 0 0 0 0 0 63 31
+: b7
+0 0 0 0 0 0 63 31
+: b8
+0 0 0 0 0 0 63 31
+
+
