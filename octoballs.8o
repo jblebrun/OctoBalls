@@ -50,80 +50,64 @@ again
 	sprite bx by 1
 ;
 
+:alias sign vf
+:alias tmp vd
+
+:macro checkbound coord velo bound expect {
+    # Check again start bound
+		tmp := coord
+		tmp -= bound
+		tmp += velo
+		if vf == expect begin 
+			coord := bound
+			# negate velocity
+			tmp := 0
+			velo =- tmp
+		else
+		  coord += velo
+		end	
+}
+
+:macro ud2 coordinate velocity boundStart boundEnd {
+	# Find sign of velocity
+	# Shifts left one, MSB goes into vF (sign)
+	sign <<= velocity
+	
+	if sign == 1 begin
+	    checkbound coordinate velocity boundStart 0
+	else 
+		  checkbound coordinate velocity boundEnd 1
+	end
+}
+
 # WHY IS IT SO HARD TO BOUNCE A BALL
 : moveball
-  i := dot
-	va := bx
-	vb := by
-	vc := 0x80
-	ve := 0x7f
-	# Handle x movement
-	
-	vd := dx
-	vd &= vc
-	if vd == 0 begin
-		# GOING RIGHT
-		bx += dx
-		bx -= right
-		if vf == 1 begin
-			bx := right
-			dx ^= vc
-		else
-			bx += right
-		end
-	else
-		# GOING LEFT
-		vd := dx
-		vd &= ve
-		bx -= vd
-		if vf == 0 begin
-			bx := 0
-			dx ^= vc
-		end
-	end
-	
-	### NOW FOR Y
-	vd := dy
-	vd &= vc
-	if vd == 0 begin
-		# GOING DOWN
-		by += dy
-		by -= bottom
-		if vf == 1 begin
-			by := bottom
-			dy ^= vc
-		else
-			by += bottom
-		end
-	else
-		# GOING UP
-		vd := dy
-		vd &= ve
-		by -= vd
-		if vf == 0 begin
-			by := 0
-			dy ^= vc
-		end
-	end
 
+	va := bx
+	vb := by	
+	
+	ud2 bx dx left right
+	ud2 by dy top bottom
+  
+: db
+  i := dot
   sprite va vb 1
 	sprite bx by 1
 ;
 
+# repack as 
+# x dx l r y dy t b
+# So we can do smaller loads
 : dot
 0x80
-
-# X Y DX DY T L R B
-# DX/DY use MSB to indicate left or right
-# 1 == left
 : b1
-32 10 0x81 3 0 0 63 31
+16 15 -1 3 0 0 63 31
 : b2
-13 27 2 0x83 0 0 63 31
+35 11 2 3 0 32 63 15
 : b3
-0 0 1 2 0 0 63 31
+17 21 1 2 16 0 31 31
 : b4
-45 20 0x81 0x82 0 0 63 31
+45 20 -1 -2 15 31 63 31
 : b5
 0 0 0 0 0 0 63 31
 : b6
@@ -132,5 +116,7 @@ again
 0 0 0 0 0 0 63 31
 : b8
 0 0 0 0 0 0 63 31
+
+
 
 
